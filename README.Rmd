@@ -546,6 +546,85 @@ p
 
 ---
 
+# Figure supplementary
+
+## 1st representation
+
+```{r, warning  = FALSE}
+
+# Merge immersion and emersion comparison
+#----------------------------------------
+im_sel <- comparison_im_sel %>%
+  select(site_name, sampling_period = period, date, loggers_temp = loggers_temperature_during_immersion, model_temp = sea_water_temperature) %>%
+  mutate(tidal_period = "Immersion")
+
+em_sel <- comparison_em_d_sel %>%
+  select(site_name, sampling_period = period, date, loggers_temp = loggers_temperature_during_emersion, model_temp = air_temperature) %>%
+  mutate(tidal_period = "Emersion")
+
+comparison <- bind_rows(im_sel, em_sel)
+
+# Correlation between model and loggers data
+#-------------------------------------------
+p <- ggplot(aes(x= loggers_temp, y = model_temp, fill = site_name), data = comparison)
+p <- p + facet_wrap(.~tidal_period, ncol = 4)
+p <- p + geom_point(shape = 21, size = 2, alpha = 0.3)
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(x= loggers_temp, y = model_temp), inherit.aes = FALSE, method = "lm", col = "black")
+p <- p + stat_cor(aes(x= loggers_temp, y = model_temp), method = "spearman", inherit.aes = FALSE)
+p <- p + scale_fill_manual(values = c("#7f3b08", "#b35806", "#e08214", "#fdb863", "#fee0b6", "#d8daeb", "#b2abd2", "#8073ac", "#542788", "#2d004b"), 
+name = "Site", guide = guide_legend(override.aes = list(size = 4, alpha = 1)))
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() + coord_equal()
+
+plot(p)
+
+```
+
+## 2nd version
+
+```{r, warning  = FALSE, fig.height = 12, fig.width = 12}
+
+p <- ggplot(aes(x= loggers_temp, y = model_temp, fill = tidal_period), data = comparison)
+p <- p + facet_wrap(.~site_name, ncol = 4, scales = "free")
+p <- p + geom_point(shape = 21, size = 2, alpha = 0.3)
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(col = tidal_period),method = "lm")
+p <- p + stat_cor(aes(col = tidal_period),method = "spearman")
+p <- p + scale_fill_manual(values = c("#ca0020", "#0571b0"), 
+name = "Tidal period", guide = guide_legend(override.aes = list(linetype = NULL, label = NULL,  shape = 21,size = 4, alpha = 1)))
+p <- p + scale_color_manual(values = c("#ca0020", "#0571b0"), 
+name = "Tidal period", guide = guide_legend(override.aes = list(linetype = NULL, label = NULL,  shape = 21,size = 4, alpha = 1)))
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() 
+
+plot(p)
+
+```
+
+## Alternative representations
+
+```{r}
+
+library(ggpointdensity)
+
+p <- ggplot(aes(x= loggers_temp, y = model_temp), data = comparison)
+p <- p + facet_wrap(.~tidal_period, ncol = 4, scales = "free")
+p <- p + geom_pointdensity(size = 2)
+p <- p + scale_color_viridis()
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(x= loggers_temp, y = model_temp), inherit.aes = FALSE, method = "lm", col = "black")
+p <- p + stat_cor(aes(x= loggers_temp, y = model_temp), method = "spearman", inherit.aes = FALSE)
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() 
+
+plot(p)
+
+```
+
+
+---
+
 # Session info
 
 ```{r session}

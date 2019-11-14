@@ -2,7 +2,7 @@ Validation of Copernicus and Arpege data with the in-situ loggers data
 \[Amelia version\]
 ================
 A. Boyé
-12 novembre, 2019
+14 novembre, 2019
 
 # Packages
 
@@ -549,6 +549,91 @@ p
 
 -----
 
+# Figure supplementary
+
+## 1st representation
+
+``` r
+# Merge immersion and emersion comparison
+#----------------------------------------
+im_sel <- comparison_im_sel %>%
+  select(site_name, sampling_period = period, date, loggers_temp = loggers_temperature_during_immersion, model_temp = sea_water_temperature) %>%
+  mutate(tidal_period = "Immersion")
+
+em_sel <- comparison_em_d_sel %>%
+  select(site_name, sampling_period = period, date, loggers_temp = loggers_temperature_during_emersion, model_temp = air_temperature) %>%
+  mutate(tidal_period = "Emersion")
+
+comparison <- bind_rows(im_sel, em_sel)
+
+# Correlation between model and loggers data
+#-------------------------------------------
+p <- ggplot(aes(x= loggers_temp, y = model_temp, fill = site_name), data = comparison)
+p <- p + facet_wrap(.~tidal_period, ncol = 4)
+p <- p + geom_point(shape = 21, size = 2, alpha = 0.3)
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(x= loggers_temp, y = model_temp), inherit.aes = FALSE, method = "lm", col = "black")
+p <- p + stat_cor(aes(x= loggers_temp, y = model_temp), method = "spearman", inherit.aes = FALSE)
+p <- p + scale_fill_manual(values = c("#7f3b08", "#b35806", "#e08214", "#fdb863", "#fee0b6", "#d8daeb", "#b2abd2", "#8073ac", "#542788", "#2d004b"), 
+name = "Site", guide = guide_legend(override.aes = list(size = 4, alpha = 1)))
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() + coord_equal()
+
+plot(p)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+## 2nd version
+
+``` r
+p <- ggplot(aes(x= loggers_temp, y = model_temp, fill = tidal_period), data = comparison)
+p <- p + facet_wrap(.~site_name, ncol = 4, scales = "free")
+p <- p + geom_point(shape = 21, size = 2, alpha = 0.3)
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(col = tidal_period),method = "lm")
+p <- p + stat_cor(aes(col = tidal_period),method = "spearman")
+p <- p + scale_fill_manual(values = c("#ca0020", "#0571b0"), 
+name = "Tidal period", guide = guide_legend(override.aes = list(linetype = NULL, label = NULL,  shape = 21,size = 4, alpha = 1)))
+p <- p + scale_color_manual(values = c("#ca0020", "#0571b0"), 
+name = "Tidal period", guide = guide_legend(override.aes = list(linetype = NULL, label = NULL,  shape = 21,size = 4, alpha = 1)))
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() 
+
+plot(p)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+## Alternative representations
+
+``` r
+library(ggpointdensity)
+
+p <- ggplot(aes(x= loggers_temp, y = model_temp), data = comparison)
+p <- p + facet_wrap(.~tidal_period, ncol = 4, scales = "free")
+p <- p + geom_pointdensity(size = 2)
+p <- p + scale_color_viridis()
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", size = 0.5)
+p <- p + geom_smooth(aes(x= loggers_temp, y = model_temp), inherit.aes = FALSE, method = "lm", col = "black")
+p <- p + stat_cor(aes(x= loggers_temp, y = model_temp), method = "spearman", inherit.aes = FALSE)
+p <- p + xlab("Loggers temperature (°C)") + ylab("Model temperature (°C)")
+p <- p + theme_linedraw() 
+
+plot(p)
+```
+
+    ## Warning: Removed 6438 rows containing non-finite values
+    ## (stat_pointdensity).
+
+    ## Warning: Removed 6438 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 6438 rows containing non-finite values (stat_cor).
+
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+-----
+
 # Session info
 
 ``` r
@@ -570,11 +655,11 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] ggforce_0.3.1     ggpubr_0.1.7      gridExtra_2.3    
-    ##  [4] plotly_4.9.0      cowplot_0.9.2     viridis_0.5.1    
-    ##  [7] viridisLite_0.3.0 ggplot2_3.2.1     tidyr_1.0.0      
-    ## [10] purrr_0.3.2       magrittr_1.5      readr_1.1.1      
-    ## [13] dplyr_0.8.3      
+    ##  [1] ggpointdensity_0.1.0 ggforce_0.3.1        ggpubr_0.1.7        
+    ##  [4] gridExtra_2.3        plotly_4.9.0         cowplot_0.9.2       
+    ##  [7] viridis_0.5.1        viridisLite_0.3.0    ggplot2_3.2.1       
+    ## [10] tidyr_1.0.0          purrr_0.3.2          magrittr_1.5        
+    ## [13] readr_1.1.1          dplyr_0.8.3         
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] Rcpp_1.0.2        pillar_1.4.2      compiler_3.5.0   
